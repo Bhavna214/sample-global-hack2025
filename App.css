@@ -1,0 +1,90 @@
+.app-root {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0F0F1A 0%, #1A1A2E 100%);
+  display: flex;
+}
+
+.sidebar {
+  width: 250px;
+  background: rgba(15, 15, 26, 0.95);
+  border-right: 1px solid rgba(123, 104, 238, 0.2);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.sidebar-title {
+  color: #7B68EE !important;
+  margin-bottom: 16px !important;
+  font-size: 1.1rem !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.5px !important;
+}
+.sidebar-listitem,
+.sidebar-listitem-expandable {
+  cursor: grab;
+  border-radius: 6px;
+  border: 1px solid rgba(123, 104, 238, 0.2) !important;
+  background: rgba(26, 26, 46, 0.5);
+  transition: background 0.2s, border 0.2s;
+  display: flex;
+  align-items: center;
+}
+.sidebar-listitem:hover {
+  background: rgba(123, 104, 238, 0.1);
+  border: 1px solid rgba(123, 104, 238, 0.4);
+}
+.sidebar-listitem-expandable:hover {
+  background: rgba(123, 104, 238, 0.1);
+  border: 1px solid rgba(123, 104, 238, 0.4);
+}
+.sidebar-listitem-icon {
+  color: #7B68EE;
+  min-width: 40px;
+  font-size: 1.2rem;
+  margin-right: 8px;
+}
+.sidebar-listitem-text .MuiTypography-root {
+  font-size: 0.9rem !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+.sidebar-listitem-expandicon {
+  color: #7B68EE;
+  font-weight: 700;
+  font-size: 18px;
+}
+.sidebar-sublist {
+  padding-left: 24px;
+}
+.main-flow-area {
+  flex-grow: 1;
+  height: 100vh;
+  background:
+    linear-gradient(135deg, #0F0F1A 0%, #1A1A2E 100%),
+    radial-gradient(circle, rgba(123, 104, 238, 0.2) 1.2px, transparent 1.2px);
+  background-size: 100% 100%, 22px 22px;
+}
+
+/* Style the React Flow controls */
+.react-flow__controls {
+    background: rgba(15, 15, 26, 0.95) !important; /* matches your sidebar/main bg */
+    border: 1px solid rgba(123, 104, 238, 0.2) !important;
+    border-radius: 6px !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2) !important;
+    padding: 4px !important;
+  }
+  
+  .react-flow__controls-button {
+    background: rgba(26, 26, 46, 0.5) !important;
+    border: 1px solid rgba(123, 104, 238, 0.2) !important;
+    color: #fff !important;
+    margin: 2px 0 !important;
+    border-radius: 4px !important;
+    transition: background 0.2s, border 0.2s;
+  }
+  
+  .react-flow__controls-button:hover {
+    background: rgba(123, 104, 238, 0.1) !important;
+    border: 1px solid rgba(123, 104, 238, 0.4) !important;
+    color: #fff !important;
+  }
