@@ -80,6 +80,26 @@ function App() {
     event.dataTransfer.dropEffect = 'move';
   }, []);
 
+    const generateConfiguration = useCallback(() => {
+    const config = generateConfig(nodes, edges);
+    console.log('Generated Configuration:', config);
+    return config;
+  }, [nodes, edges]);
+
+  const handleGenerateConfig = useCallback(() => {
+    const config = generateConfiguration();
+    // Create a blob and download the configuration
+    const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'workflow-config.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, [generateConfiguration]);
+
   const onDrop = useCallback(
     (event) => {
       event.preventDefault();
@@ -167,6 +187,20 @@ function App() {
               </ListItem>
             ))}
           </List>
+          <Button
+            variant="contained"
+            fullWidth
+            onClick={handleGenerateConfig}
+            sx={{
+              mt: 2,
+              background: 'linear-gradient(90deg, #a084e8 0%, #7B68EE 100%)',
+              '&:hover': {
+                background: 'linear-gradient(90deg, #7B68EE 0%, #a084e8 100%)',
+              },
+            }}
+          >
+            Export Configuration
+          </Button>
         </Paper>
         {/* Main Flow Area */}
         <Box className="main-flow-area">
