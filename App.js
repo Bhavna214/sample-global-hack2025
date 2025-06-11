@@ -1,8 +1,9 @@
 import React, { useState, useCallback } from 'react';
-import { ThemeProvider, createTheme, CssBaseline, Box, Paper, Typography, List, ListItem, ListItemText, ListItemIcon } from '@mui/material';
+import { ThemeProvider, createTheme, CssBaseline, Box, Paper, Typography, List, ListItem, ListItemText, ListItemIcon, Button } from '@mui/material';
 import ReactFlow, { Background, Controls, Edge, Node, NodeChange, EdgeChange, applyNodeChanges, applyEdgeChanges, addEdge } from 'reactflow';
 import 'reactflow/dist/style.css';
 import CustomNode from './CustomNode.js';
+import { generateConfig } from './generateConfig';
 import './App.css';
 
 const darkTheme = createTheme({
@@ -59,6 +60,7 @@ function App() {
   const [nodes, setNodes] = useState(initialNodes);
   const [edges, setEdges] = useState(initialEdges);
   const [loadersOpen, setLoadersOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const onNodesChange = useCallback(
     (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
@@ -86,18 +88,48 @@ function App() {
     return config;
   }, [nodes, edges]);
 
-  const handleGenerateConfig = useCallback(() => {
-    const config = generateConfiguration();
-    // Create a blob and download the configuration
-    const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'workflow-config.json';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+  const handleGenerateConfig = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const config = generateConfiguration();
+      
+      // Make API POST request
+      const response = await fetch('YOUR_API_ENDPOINT', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(config)
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // Get the blob from the response
+      const blob = await response.blob();
+      
+      // Create a URL for the blob
+      const url = window.URL.createObjectURL(blob);
+      
+      // Create a temporary link element
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'generated-workflow.zip'; // Name of the downloaded file
+      
+      // Append to body, click, and remove
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Clean up the URL
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading file:', error);
+      // You might want to show an error message to the user here
+    } finally {
+      setIsLoading(false);
+    }
   }, [generateConfiguration]);
 
   const onDrop = useCallback(
@@ -191,6 +223,7 @@ function App() {
             variant="contained"
             fullWidth
             onClick={handleGenerateConfig}
+            disabled={isLoading}
             sx={{
               mt: 2,
               background: 'linear-gradient(90deg, #a084e8 0%, #7B68EE 100%)',
@@ -199,7 +232,7 @@ function App() {
               },
             }}
           >
-            Export Configuration
+            {isLoading ? 'Generating...' : 'Export Configuration'}
           </Button>
         </Paper>
         {/* Main Flow Area */}
