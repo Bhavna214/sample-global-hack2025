@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Box, Typography, TextField, Button, Divider } from '@mui/material';
-import { Handle, Position } from 'reactflow';
+import { Handle, Position, useReactFlow } from 'reactflow';
 import './CustomNode.css';
 
 const nodeColors = {
@@ -28,8 +28,64 @@ const nodeIcons = {
 };
 
 export default function CustomNode({ data, type, id }) {
+  const { setNodes } = useReactFlow();
+  const [file, setFile] = useState(null);
   const colorClass = nodeColors[type] || nodeColors.default;
   const icon = nodeIcons[type] || nodeIcons.default;
+
+  const handleFileUpload = async (event) => {
+    const uploadedFile = event.target.files[0];
+    if (!uploadedFile) return;
+
+    setFile(uploadedFile);
+
+    // Update node data with file information
+    setNodes((nodes) =>
+      nodes.map((node) => {
+        if (node.id === id) {
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              fields: node.data.fields.map((field) => {
+                if (field.label.toLowerCase().includes('file')) {
+                  return {
+                    ...field,
+                    value: uploadedFile,
+                    type: 'file'
+                  };
+                }
+                return field;
+              }),
+            },
+          };
+        }
+        return node;
+      })
+    );
+  };
+
+  const handleFieldChange = (fieldIndex, newValue) => {
+    setNodes((nodes) =>
+      nodes.map((node) => {
+        if (node.id === id) {
+          const updatedFields = [...node.data.fields];
+          updatedFields[fieldIndex] = {
+            ...updatedFields[fieldIndex],
+            value: newValue
+          };
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              fields: updatedFields
+            }
+          };
+        }
+        return node;
+      })
+    );
+  };
 
   return (
     <div className={`custom-node ${colorClass}`}>
@@ -51,11 +107,18 @@ export default function CustomNode({ data, type, id }) {
         </Typography>
       )}
       {/* Fields */}
-      {type === 'pdfLoader' ? (
-        <label className="pdf-upload-area">
-          <span className="pdf-upload-icon">📄</span>
-          <span className="pdf-upload-text">Click or drag PDF here to upload</span>
-          <input type="file" accept=".pdf" hidden onChange={() => {}} />
+      {type === 'pdfLoader' || type === 'csvLoader' ? (
+        <label className="file-upload-area">
+          <span className="file-upload-icon">{icon}</span>
+          <span className="file-upload-text">
+            {file ? file.name : `Click or drag ${type === 'pdfLoader' ? 'PDF' : 'CSV'} here to upload`}
+          </span>
+          <input
+            type="file"
+            accept={type === 'pdfLoader' ? '.pdf' : '.csv'}
+            hidden
+            onChange={handleFileUpload}
+          />
         </label>
       ) : (
         data.fields && data.fields.map((field, idx) => (
@@ -67,7 +130,8 @@ export default function CustomNode({ data, type, id }) {
               size="small"
               fullWidth
               variant="outlined"
-              value={field.value}
+              value={field.value || ''}
+              onChange={(e) => handleFieldChange(idx, e.target.value)}
               placeholder={field.placeholder}
               InputProps={{ readOnly: field.readOnly }}
               className="custom-node-textfield"
@@ -81,6 +145,7 @@ export default function CustomNode({ data, type, id }) {
           variant="contained"
           fullWidth
           className="custom-node-action-btn"
+          onClick={() => document.querySelector('input[type="file"]')?.click()}
         >
           {data.button}
         </Button>
