@@ -3,6 +3,7 @@ import { ThemeProvider, createTheme, CssBaseline, Box, Paper, Typography, List, 
 import ReactFlow, { Background, Controls, Edge, Node, NodeChange, EdgeChange, applyNodeChanges, applyEdgeChanges, addEdge } from 'reactflow';
 import 'reactflow/dist/style.css';
 import CustomNode from './CustomNode.js';
+import WorkflowConfig from './WorkflowConfig';
 import { generateConfig } from './generateConfig';
 import './App.css';
 
@@ -152,6 +153,47 @@ function App() {
     [nodes]
   );
 
+  const handleImportWorkflow = useCallback((config) => {
+    try {
+      // Transform nodes from config to ReactFlow format
+      const importedNodes = config.connections.nodes.map((node, index) => {
+        // Convert props back to fields format
+        const fields = Object.entries(node.props).map(([label, value]) => ({
+          label,
+          value: value || '',
+          placeholder: '',
+          readOnly: label.toLowerCase().includes('file')
+        }));
+
+        return {
+          id: `${index + 1}`,
+          type: node.type,
+          position: {
+            x: 100 + (index * 200),
+            y: 100
+          },
+          data: {
+            ...nodeTemplates[node.type],
+            fields
+          }
+        };
+      });
+
+      // Transform edges from config to ReactFlow format
+      const importedEdges = config.connections.edges.map((edge, index) => ({
+        id: `e${index + 1}`,
+        source: edge.source,
+        target: edge.target,
+        type: 'smoothstep'
+      }));
+
+      setNodes(importedNodes);
+      setEdges(importedEdges);
+    } catch (error) {
+      console.error('Error importing workflow:', error);
+    }
+  }, []);
+
   return (
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
@@ -219,6 +261,11 @@ function App() {
               </ListItem>
             ))}
           </List>
+          <WorkflowConfig 
+            nodes={nodes}
+            edges={edges}
+            onImport={handleImportWorkflow}
+          />
           <Button
             variant="contained"
             fullWidth
